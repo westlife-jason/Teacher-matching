@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  TEACHER
+  CENTER
+}
+
+enum MatchStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teacher          Teacher?
+  center           CultureCenter?
+  sentMessages     Message[]      @relation("SentMessages")
+  receivedMessages Message[]      @relation("ReceivedMessages")
+}
+
+model Teacher {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio         String?
+  subjects    String[]
+  location    String?
+  hourlyRate  Int?
+  experience  Int?
+  available   Boolean  @default(true)
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  matchRequests MatchRequest[]
+}
+
+model CultureCenter {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  centerName  String
+  address     String?
+  description String?
+  phone       String?
+  website     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  matchRequests MatchRequest[]
+}
+
+model MatchRequest {
+  id        String      @id @default(cuid())
+  teacherId String
+  teacher   Teacher     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  centerId  String
+  center    CultureCenter @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  status    MatchStatus @default(PENDING)
+  subject   String?
+  message   String?
+  schedule  String?
+  salary    Int?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
