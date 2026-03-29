@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Users, MessageSquare, CheckCircle, Clock } from "lucide-react";
+import { NearbyCentersCard } from "@/components/dashboard/NearbyCentersCard";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -86,6 +87,13 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* 주변 문화센터 추천 (강사 전용) */}
+      {isTeacher && (
+        <div className="mb-10">
+          <NearbyCentersCard teacherUserId={session.user.id} />
+        </div>
+      )}
 
       {/* Quick Links */}
       <div className="grid md:grid-cols-2 gap-6">
